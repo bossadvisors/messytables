@@ -1,4 +1,5 @@
 
+from __future__ import absolute_import
 from messytables.util import offset_processor, null_processor
 from messytables.headers import headers_guess, headers_processor, headers_make_unique
 from messytables.types import type_guess, types_processor

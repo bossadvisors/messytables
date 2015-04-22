@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from messytables.core import RowSet, TableSet, Cell
 
 from messytables.types import StringType

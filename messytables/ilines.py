@@ -5,44 +5,44 @@
 
 def ilines(source_iterable):
     for line in _ilines(source_iterable):
-        yield line.decode('utf-8')
+        yield line.decode(u'utf-8')
 
 def _ilines(source_iterable):
-    '''yield lines as in universal-newlines from a stream of data blocks'''
-    tail = b''
+    u'''yield lines as in universal-newlines from a stream of data blocks'''
+    tail = ''
     for block in source_iterable:
         if not block:
             continue
-        if len(tail) and tail[-1] == b'\015':
-            yield tail[:-1] + b'\012'
-            if block[0] == b'\012':
+        if len(tail) and tail[-1] == '\015':
+            yield tail[:-1] + '\012'
+            if block[0] == '\012':
                 pos = 1
             else:
-                tail = b''
+                tail = ''
         else:
             pos = 0
         try:
             while True:  # While we are finding LF.
-                npos = block.index(b'\012', pos) + 1
+                npos = block.index('\012', pos) + 1
                 try:
                     rend = npos - 2
-                    rpos = block.index(b'\015', pos, rend)
+                    rpos = block.index('\015', pos, rend)
                     if pos:
-                        yield block[pos: rpos] + b'\n'
+                        yield block[pos: rpos] + '\n'
                     else:
-                        yield tail + block[:rpos] + b'\n'
+                        yield tail + block[:rpos] + '\n'
                     pos = rpos + 1
                     while True:  # While CRs 'inside' the LF
-                        rpos = block.index(b'\015', pos, rend)
-                        yield block[pos: rpos] + b'\n'
+                        rpos = block.index('\015', pos, rend)
+                        yield block[pos: rpos] + '\n'
                         pos = rpos + 1
                 except ValueError:
                     pass
-                if b'\015' == block[rend]:
+                if '\015' == block[rend]:
                     if pos:
-                        yield block[pos: rend] + b'\n'
+                        yield block[pos: rend] + '\n'
                     else:
-                        yield tail + block[:rend] + b'\n'
+                        yield tail + block[:rend] + '\n'
                 elif pos:
                     yield block[pos: npos]
                 else:
@@ -53,11 +53,11 @@ def _ilines(source_iterable):
         # No LFs left in block.  Do all but final CR (in case LF)
         try:
             while True:
-                rpos = block.index(b'\015', pos, -1)
+                rpos = block.index('\015', pos, -1)
                 if pos:
-                    yield block[pos: rpos] + b'\n'
+                    yield block[pos: rpos] + '\n'
                 else:
-                    yield tail + block[:rpos] + b'\n'
+                    yield tail + block[:rpos] + '\n'
                 pos = rpos + 1
         except ValueError:
             pass

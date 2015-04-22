@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import unittest
 from . import horror_fobj
 from messytables.any import any_tableset
@@ -20,25 +21,25 @@ except ImportError:
 
 class TestCellProperties(unittest.TestCase):
     def test_core_properties(self):
-        csv = any_tableset(horror_fobj('simple.csv'), extension="csv")
+        csv = any_tableset(horror_fobj(u'simple.csv'), extension=u"csv")
         for table in csv.tables:
             for row in table:
                 for cell in row:
                     cell.properties  # vague existence
-                    assert_false('anything' in cell.properties)
+                    assert_false(u'anything' in cell.properties)
 
 
 class TestCoreProperties(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.html = any_tableset(horror_fobj('rowcolspan.html'),
-                                extension="html")
+        cls.html = any_tableset(horror_fobj(u'rowcolspan.html'),
+                                extension=u"html")
         first_row = list(list(cls.html.tables)[0])[0]
         cls.real_cell = first_row[1]
 
     def test_properties_implements_in(self):
-        assert_true('html' in self.real_cell.properties)
-        assert_false('invalid' in self.real_cell.properties)
+        assert_true(u'html' in self.real_cell.properties)
+        assert_false(u'invalid' in self.real_cell.properties)
 
     def test_properties_implements_keys(self):
         assert_equal(list, type(list(self.real_cell.properties.keys())))
@@ -47,21 +48,21 @@ class TestCoreProperties(unittest.TestCase):
         list(self.real_cell.properties.items())
 
     def test_properties_implements_get(self):
-        assert_equal('default', self.real_cell.properties.get(
-            'not_in_properties', 'default'))
-        assert_equal(None, self.real_cell.properties.get('not_in_properties'))
+        assert_equal(u'default', self.real_cell.properties.get(
+            u'not_in_properties', u'default'))
+        assert_equal(None, self.real_cell.properties.get(u'not_in_properties'))
 
 
 class TestExcelSpanRich(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.xls = any_tableset(horror_fobj('span_rich.xls'), extension='xls')
+        cls.xls = any_tableset(horror_fobj(u'span_rich.xls'), extension=u'xls')
         cls.table = list(list(cls.xls.tables)[0])
 
     def test_basic_rich(self):
-        assert self.table[4][1].properties['richtext']
-        assert not list(self.table)[4][2].properties['richtext']
-        assert self.table[4][1].value == 'bold and italic'
+        assert self.table[4][1].properties[u'richtext']
+        assert not list(self.table)[4][2].properties[u'richtext']
+        assert self.table[4][1].value == u'bold and italic'
 
     def test_topleft(self):
         assert self.table[0][0].topleft, self.table[0][0].value
@@ -73,56 +74,56 @@ class TestExcelSpanRich(unittest.TestCase):
 class TestExcelProperties(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.xls = any_tableset(horror_fobj('excel_properties.xls'), extension='xls')
+        cls.xls = any_tableset(horror_fobj(u'excel_properties.xls'), extension=u'xls')
         rows = list(cls.xls.tables)[0]
         cls.first_cells = [list(row)[0] for row in rows]
         cls.properties = [x.properties for x in cls.first_cells]
 
     def test_cell_has_bold(self):
-        assert_true('bold' in self.properties[0])
-        assert_true(self.properties[0]['bold'])
-        assert_false(self.properties[1]['bold'])
+        assert_true(u'bold' in self.properties[0])
+        assert_true(self.properties[0][u'bold'])
+        assert_false(self.properties[1][u'bold'])
 
     def test_cell_has_italic(self):
-        assert_true(self.properties[1]['italic'])
-        assert_false(self.properties[0]['italic'])
+        assert_true(self.properties[1][u'italic'])
+        assert_false(self.properties[0][u'italic'])
 
     def test_cell_has_underline(self):
-        assert_true(self.properties[2]['underline'])
-        assert_false(self.properties[1]['underline'])
+        assert_true(self.properties[2][u'underline'])
+        assert_false(self.properties[1][u'underline'])
 
     def test_cell_size(self):
-        assert_true(self.properties[9]['size'] > 20)
-        assert_true(self.properties[10]['size'] < 8)
-        assert_true(self.properties[0]['size'] == 10)
+        assert_true(self.properties[9][u'size'] > 20)
+        assert_true(self.properties[10][u'size'] < 8)
+        assert_true(self.properties[0][u'size'] == 10)
 
     def test_cell_has_borders(self):
-        assert_false(self.properties[0]['any_border'])
-        assert_false(self.properties[0]['all_border'])
-        assert_true(self.properties[7]['any_border'])
-        assert_false(self.properties[7]['all_border'])
-        assert_true(self.properties[8]['any_border'])
-        assert_true(self.properties[8]['all_border'])
+        assert_false(self.properties[0][u'any_border'])
+        assert_false(self.properties[0][u'all_border'])
+        assert_true(self.properties[7][u'any_border'])
+        assert_false(self.properties[7][u'all_border'])
+        assert_true(self.properties[8][u'any_border'])
+        assert_true(self.properties[8][u'all_border'])
 
     def test_cell_has_fontname(self):
-        assert_true(self.properties[0]['font_name'] == 'Arial')
+        assert_true(self.properties[0][u'font_name'] == u'Arial')
 
     def test_cell_has_strikeout(self):
-        assert_true(self.properties[11]['strikeout'])
-        assert_false(self.properties[0]['strikeout'])
+        assert_true(self.properties[11][u'strikeout'])
+        assert_false(self.properties[0][u'strikeout'])
 
     def test_blank_cells(self):
-        assert_true(self.properties[12]['blank'])
-        assert_false(self.properties[13]['blank'])
+        assert_true(self.properties[12][u'blank'])
+        assert_false(self.properties[13][u'blank'])
 
     def test_date(self):
-        assert_false(self.properties[13]['a_date'])
-        assert_true(self.properties[14]['a_date'])
-        assert_equal(self.properties[14]['formatting_string'], r'DD/MM/YY')
-        assert_equal(self.properties[15]['formatting_string'], r'QQ\ YY')
-        assert_equal(self.properties[16]['formatting_string'], r'YYYY')
-        assert_equal(self.properties[17]['formatting_string'], r'YYYY\ MMM')
-        assert_equal(self.properties[18]['formatting_string'], r'D\ MMM\ YYYY')
+        assert_false(self.properties[13][u'a_date'])
+        assert_true(self.properties[14][u'a_date'])
+        assert_equal(self.properties[14][u'formatting_string'], ur'DD/MM/YY')
+        assert_equal(self.properties[15][u'formatting_string'], ur'QQ\ YY')
+        assert_equal(self.properties[16][u'formatting_string'], ur'YYYY')
+        assert_equal(self.properties[17][u'formatting_string'], ur'YYYY\ MMM')
+        assert_equal(self.properties[18][u'formatting_string'], ur'D\ MMM\ YYYY')
 
 
 
@@ -131,8 +132,8 @@ class TestHtmlProperties(unittest.TestCase):
     # <td colspan='2'> would create one 'real' and one 'fake' cell
     @classmethod
     def setUpClass(cls):
-        cls.html = any_tableset(horror_fobj('rowcolspan.html'),
-                                extension="html")
+        cls.html = any_tableset(horror_fobj(u'rowcolspan.html'),
+                                extension=u"html")
         cls.first_row = list(list(cls.html.tables)[0])[0]
         cls.real_cell = cls.first_row[1]
         cls.fake_cell = cls.first_row[2]
@@ -140,51 +141,51 @@ class TestHtmlProperties(unittest.TestCase):
     def test_real_cells_have_properties(self):
         assert_greater_equal(
             set(self.real_cell.properties.keys()),
-            set(['_lxml', 'html'])
+            set([u'_lxml', u'html'])
             )
 
     def test_real_cells_have_lxml_property(self):
-        lxml_element = self.real_cell.properties['_lxml']
+        lxml_element = self.real_cell.properties[u'_lxml']
         assert_is_instance(lxml_element, lxml.etree._Element)
-        assert_equal(b'<td colspan="2">06</td>',
+        assert_equal('<td colspan="2">06</td>',
                      lxml.html.tostring(lxml_element))
 
     def test_real_cell_has_a_colspan(self):
-        assert_equal(self.real_cell.properties['colspan'], 2)
+        assert_equal(self.real_cell.properties[u'colspan'], 2)
 
     def test_fake_cells_have_no_lxml_property(self):
-        assert_raises(KeyError, lambda: self.fake_cell.properties['_lxml'])
-        assert_raises(NoSuchPropertyError, lambda: self.fake_cell.properties['_lxml'])
+        assert_raises(KeyError, lambda: self.fake_cell.properties[u'_lxml'])
+        assert_raises(NoSuchPropertyError, lambda: self.fake_cell.properties[u'_lxml'])
 
     def test_real_cells_have_html_property(self):
-        html = self.real_cell.properties['html']
-        assert_is_instance(html, bytes)
-        assert_equal(b'<td colspan="2">06</td>', html)
+        html = self.real_cell.properties[u'html']
+        assert_is_instance(html, str)
+        assert_equal('<td colspan="2">06</td>', html)
 
     def test_fake_cells_have_no_html_property(self):
-        assert_raises(KeyError, lambda: self.fake_cell.properties['html'])
+        assert_raises(KeyError, lambda: self.fake_cell.properties[u'html'])
 
 class TestBrokenColspans(unittest.TestCase):
     def setUp(self):
-        self.html = any_tableset(horror_fobj("badcolspan.html"),
-                                 extension="html")
+        self.html = any_tableset(horror_fobj(u"badcolspan.html"),
+                                 extension=u"html")
 
     def test_first_row(self):
         first_row = list(list(self.html.tables)[0])[0]
-        self.assertEqual([cell.properties['colspan'] for cell in first_row],
+        self.assertEqual([cell.properties[u'colspan'] for cell in first_row],
                          [1, 1, 1, 1])
 
     def test_second_row(self):
         second_row = list(list(self.html.tables)[0])[1]
-        self.assertEqual([cell.properties['colspan'] for cell in second_row],
+        self.assertEqual([cell.properties[u'colspan'] for cell in second_row],
                          [1, 1, 1, 1])
 
     def test_third_row(self):
         third_row = list(list(self.html.tables)[0])[2]
-        self.assertEqual([cell.properties['colspan'] for cell in third_row],
+        self.assertEqual([cell.properties[u'colspan'] for cell in third_row],
                          [1, 1, 1, 1])
 
     def test_fourth_row(self):
         fourth_row = list(list(self.html.tables)[0])[3]
-        self.assertEqual([cell.properties['colspan'] for cell in fourth_row],
+        self.assertEqual([cell.properties[u'colspan'] for cell in fourth_row],
                          [1, 1, 1, 1])

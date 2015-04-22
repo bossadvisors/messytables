@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import unittest
 import io
 
@@ -12,9 +13,9 @@ from messytables import (CSVTableSet, type_guess, headers_guess,
 
 
 class TypeGuessTest(unittest.TestCase):
-    @attr("slow")
+    @attr(u"slow")
     def test_type_guess(self):
-        csv_file = io.BytesIO(b'''
+        csv_file = io.BytesIO('''
             1,   2012/2/12, 2,   02 October 2011,  yes,   1
             2,   2012/2/12, 2,   02 October 2011,  true,  1
             2.4, 2012/2/12, 1,   1 May 2011,       no,    0
@@ -25,13 +26,13 @@ class TypeGuessTest(unittest.TestCase):
         guessed_types = type_guess(rows.sample)
 
         assert_equal(guessed_types, [
-            DecimalType(), DateType('%Y/%m/%d'), IntegerType(),
-            DateType('%d %B %Y'), BoolType(), BoolType()])
+            DecimalType(), DateType(u'%Y/%m/%d'), IntegerType(),
+            DateType(u'%d %B %Y'), BoolType(), BoolType()])
 
     def test_type_guess_strict(self):
         import locale
-        locale.setlocale(locale.LC_ALL, 'en_GB.UTF-8')
-        csv_file = io.BytesIO(b'''
+        locale.setlocale(locale.LC_ALL, u'en_GB.UTF-8')
+        csv_file = io.BytesIO('''
             1,   2012/2/12, 2,      2,02 October 2011,"100.234354"
             2,   2012/2/12, 1.1,    0,1 May 2011,"100,000,000.12"
             foo, bar,       1500,   0,,"NaN"
@@ -41,11 +42,11 @@ class TypeGuessTest(unittest.TestCase):
         guessed_types = type_guess(rows.sample, strict=True)
         assert_equal(guessed_types, [
             StringType(), StringType(),
-            DecimalType(), IntegerType(), DateType('%d %B %Y'),
+            DecimalType(), IntegerType(), DateType(u'%d %B %Y'),
             DecimalType()])
 
     def test_strict_guessing_handles_padding(self):
-        csv_file = io.BytesIO(b'''
+        csv_file = io.BytesIO('''
             1,   , 2
             2,   , 1.1
             foo, , 1500''')
@@ -56,7 +57,7 @@ class TypeGuessTest(unittest.TestCase):
                      [StringType(), StringType(), DecimalType()])
 
     def test_non_strict_guessing_handles_padding(self):
-        csv_file = io.BytesIO(b'''
+        csv_file = io.BytesIO('''
             1,   , 2.1
             2,   , 1.1
             foo, , 1500''')
@@ -67,7 +68,7 @@ class TypeGuessTest(unittest.TestCase):
                      [IntegerType(), StringType(), DecimalType()])
 
     def test_guessing_uses_first_in_case_of_tie(self):
-        csv_file = io.BytesIO(b'''
+        csv_file = io.BytesIO('''
             2
             1.1
             1500''')
@@ -80,9 +81,9 @@ class TypeGuessTest(unittest.TestCase):
             rows.sample, types=[IntegerType, DecimalType], strict=False)
         assert_equal(guessed_types, [IntegerType()])
 
-    @attr("slow")
+    @attr(u"slow")
     def test_strict_type_guessing_with_large_file(self):
-        fh = horror_fobj('211.csv')
+        fh = horror_fobj(u'211.csv')
         rows = CSVTableSet(fh).tables[0]
         offset, headers = headers_guess(rows.sample)
         rows.register_processor(offset_processor(offset + 1))
@@ -117,14 +118,14 @@ class TypeGuessTest(unittest.TestCase):
             StringType(), StringType()])
 
     def test_file_with_few_strings_among_integers(self):
-        fh = horror_fobj('mixedGLB.csv')
+        fh = horror_fobj(u'mixedGLB.csv')
         rows = CSVTableSet(fh).tables[0]
         offset, headers = headers_guess(rows.sample)
         rows.register_processor(offset_processor(offset + 1))
         types = [StringType, IntegerType, DecimalType, DateUtilType]
         guessed_types = type_guess(rows.sample, types, True)
         assert_equal(len(guessed_types), 19)
-        print(guessed_types)
+        print guessed_types
         assert_equal(guessed_types, [
             IntegerType(), IntegerType(),
             IntegerType(), IntegerType(), IntegerType(), IntegerType(),

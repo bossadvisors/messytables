@@ -1,3 +1,5 @@
+from __future__ import division
+from __future__ import absolute_import
 import sys
 from datetime import datetime
 import xlrd
@@ -25,12 +27,12 @@ XLS_TYPES = {
 }
 
 class XLSTableSet(TableSet):
-    """An excel workbook wrapper object.
+    u"""An excel workbook wrapper object.
     """
 
     def __init__(self, fileobj=None, filename=None,
                  window=None, encoding=None, with_formatting_info=True):
-        '''Initialize the tableset.
+        u'''Initialize the tableset.
 
         :param encoding: passed on to xlrd.open_workbook function
             as encoding_override
@@ -43,10 +45,10 @@ class XLSTableSet(TableSet):
                     file_contents=read_obj,
                     encoding_override=encoding,
                     formatting_info=with_formatting_info)
-            except XLRDError as e:
+            except XLRDError, e:
                 _, value, traceback = sys.exc_info()
-                raise ReadError("Can't read Excel file: %r" % value).with_traceback(traceback)
-        '''Initilize the tableset.
+raise ReadError, u"Can't read Excel file: %r" % value, traceback
+        u'''Initilize the tableset.
 
         :param encoding: passed on to xlrd.open_workbook function
             as encoding_override
@@ -62,7 +64,7 @@ class XLSTableSet(TableSet):
         self.window = window
 
         if not filename and not fileobj:
-            raise Exception('You must provide one of filename or fileobj')
+            raise Exception(u'You must provide one of filename or fileobj')
 
         if fileobj:
             read_obj = fileobj.read()
@@ -71,7 +73,7 @@ class XLSTableSet(TableSet):
 
         try:
             self.workbook = get_workbook()
-        except NotImplementedError as e:
+        except NotImplementedError, e:
             if not with_formatting_info:
                 raise
             else:
@@ -80,13 +82,13 @@ class XLSTableSet(TableSet):
 
 
     def make_tables(self):
-        """ Return the sheets in the workbook. """
+        u""" Return the sheets in the workbook. """
         return [XLSRowSet(name, self.workbook.sheet_by_name(name), self.window)
                 for name in self.workbook.sheet_names()]
 
 
 class XLSRowSet(RowSet):
-    """ Excel support for a single sheet in the excel workbook. Unlike
+    u""" Excel support for a single sheet in the excel workbook. Unlike
     the CSV row set this is not a streaming operation. """
 
     def __init__(self, name, sheet, window=None):
@@ -96,17 +98,17 @@ class XLSRowSet(RowSet):
         super(XLSRowSet, self).__init__(typed=True)
 
     def raw(self, sample=False):
-        """ Iterate over all rows in this sheet. Types are automatically
+        u""" Iterate over all rows in this sheet. Types are automatically
         converted according to the excel data types specified, including
         conversion of excel dates, which are notoriously buggy. """
         num_rows = self.sheet.nrows
-        for rownum in range(min(self.window, num_rows) if sample else num_rows):
+        for rownum in xrange(min(self.window, num_rows) if sample else num_rows):
             row = []
             for colnum, cell in enumerate(self.sheet.row(rownum)):
                 try:
                     row.append(XLSCell.from_xlrdcell(cell, self.sheet, colnum, rownum))
                 except InvalidDateError:
-                    raise ValueError("Invalid date at '%s':%d,%d" % (
+                    raise ValueError(u"Invalid date at '%s':%d,%d" % (
                         self.sheet.name, colnum+1, rownum+1))
             yield row
 
@@ -137,9 +139,9 @@ class XLSCell(Cell):
         return XLSProperties(self)
 
 class XLSProperties(CoreProperties):
-    KEYS = ['bold', 'size', 'italic', 'font_name', 'strikeout', 'underline',
-            'font_colour', 'background_colour', 'any_border', 'all_border',
-            'richtext', 'blank', 'a_date', 'formatting_string']
+    KEYS = [u'bold', u'size', u'italic', u'font_name', u'strikeout', u'underline',
+            u'font_colour', u'background_colour', u'any_border', u'all_border',
+            u'richtext', u'blank', u'a_date', u'formatting_string']
     def __init__(self, cell):
         self.cell = cell
         self.merged = {}
@@ -158,12 +160,12 @@ class XLSProperties(CoreProperties):
 
     @property
     def rich(self):
-        """returns a tuple of character position, font number which starts at that position
+        u"""returns a tuple of character position, font number which starts at that position
         https://secure.simplistix.co.uk/svn/xlrd/trunk/xlrd/doc/xlrd.html?p=4966#sheet.Sheet.rich_text_runlist_map-attribute"""
         return self.cell.sheet.rich_text_runlist_map.get(self.cell.xlrd_pos, None)
 
     def raw_span(self, always=False):
-        """return the bounding box of the cells it's part of.
+        u"""return the bounding box of the cells it's part of.
          https://secure.simplistix.co.uk/svn/xlrd/trunk/xlrd/doc/xlrd.html?p=4966#sheet.Sheet.merged_cells-attribute"""
         row, col = self.cell.xlrd_pos
         for box in self.cell.sheet.merged_cells:
@@ -200,7 +202,7 @@ class XLSProperties(CoreProperties):
         return self.font.weight > 500
 
     def get_size(self):
-        """in pixels"""
+        u"""in pixels"""
         return self.font.height / 20.0
 
     def get_italic(self):
@@ -220,9 +222,9 @@ class XLSProperties(CoreProperties):
         return self.font.color_index ## more lookup required
 
     def get_blank(self):
-        """Note that cells might not exist at all.
+        u"""Note that cells might not exist at all.
            Behaviour for spanned cells might be complicated: hence this function"""
-        return self.cell.value == ''
+        return self.cell.value == u''
 
     def get_background_colour(self):
         return self.xf.background.background_color_index ## more lookup required

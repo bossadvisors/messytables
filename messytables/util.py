@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from itertools import imap
 try:
     # python 2.7:
     from collections import OrderedDict
@@ -12,8 +14,8 @@ except ImportError:
 
         def __init__(self, *args, **kwds):
             if len(args) > 1:
-                raise TypeError('expected at 1 argument, got %d', len(args))
-            if not hasattr(self, '_keys'):
+                raise TypeError(u'expected at 1 argument, got %d', len(args))
+            if not hasattr(self, u'_keys'):
                 self._keys = []
             self.update(*args, **kwds)
 
@@ -46,7 +48,7 @@ except ImportError:
         def __reduce__(self):
             items = [[k, self[k]] for k in self]
             inst_dict = vars(self).copy()
-            inst_dict.pop('_keys', None)
+            inst_dict.pop(u'_keys', None)
             return (self.__class__, (items,), inst_dict)
 
         # Methods with indirect access via the above methods
@@ -59,8 +61,8 @@ except ImportError:
         items = MutableMapping.items
 
         def __repr__(self):
-            pairs = ', '.join(map('%r: %r'.__mod__, list(self.items())))
-            return '%s({%s})' % (self.__class__.__name__, pairs)
+            pairs = u', '.join(imap(u'%r: %r'.__mod__, list(self.items())))
+            return u'%s({%s})' % (self.__class__.__name__, pairs)
 
         def copy(self):
             return self.__class__(self)
@@ -75,7 +77,7 @@ except ImportError:
 
 
 def offset_processor(offset):
-    """ Skip ``offset`` from the given iterator. This can
+    u""" Skip ``offset`` from the given iterator. This can
     be used in combination with the ``headers_processor`` to
     apply the result of a header scan to the table.
 
@@ -83,7 +85,7 @@ def offset_processor(offset):
     :type offset: int
     """
     def apply_offset(row_set, row):
-        if not hasattr(row_set, '_offset'):
+        if not hasattr(row_set, u'_offset'):
             row_set._offset = 0
         if row_set._offset >= offset:
             return row
@@ -92,7 +94,7 @@ def offset_processor(offset):
 
 
 def null_processor(nulls):
-    """ Replaces every occurrence of items from `nulls` with None.
+    u""" Replaces every occurrence of items from `nulls` with None.
 
     :param nulls: List of items to be replaced
     :type nulls: list

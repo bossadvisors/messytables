@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from messytables.util import OrderedDict
 from collections import Mapping
 from messytables.error import TableError, NoSuchPropertyError
@@ -15,7 +16,7 @@ def seekable_stream(fileobj):
 
 
 class BufferedFile(object):
-    ''' A buffered file that preserves the beginning of
+    u''' A buffered file that preserves the beginning of
     a stream up to buffer_size
     '''
     def __init__(self, fp, buffer_size=2048):
@@ -30,7 +31,7 @@ class BufferedFile(object):
         try:
             return self.fp.readline()
         except AttributeError:
-            return next(self.fp)
+            return self.fp.next()
 
     def _read(self, n):
         return self.fp.read(n)
@@ -41,7 +42,7 @@ class BufferedFile(object):
 
     def readline(self):
         if self.len < self.offset < self.fp_offset:
-            raise BufferError('Line is not available anymore')
+            raise BufferError(u'Line is not available anymore')
         if self.offset >= self.len:
             line = self._next_line()
             self.fp_offset += len(line)
@@ -64,7 +65,7 @@ class BufferedFile(object):
             return self.data.read(-1) + self.fp.read(-1)
 
         if self.len < self.offset < self.fp_offset:
-            raise BufferError('Data is not available anymore')
+            raise BufferError(u'Data is not available anymore')
         if self.offset >= self.len:
             byte = self._read(n)
             self.fp_offset += len(byte)
@@ -84,7 +85,7 @@ class BufferedFile(object):
 
     def seek(self, offset):
         if self.len < offset < self.fp_offset:
-            raise BufferError('Cannot seek because data is not buffered here')
+            raise BufferError(u'Cannot seek because data is not buffered here')
         self.offset = offset
         if offset < self.len:
             self.data.seek(offset)
@@ -95,9 +96,9 @@ class CoreProperties(Mapping):
 
     def __getitem__(self, key):
         if key in self.KEYS:
-            return getattr(self, 'get_' + key)()
+            return getattr(self, u'get_' + key)()
         else:
-            raise NoSuchPropertyError("%r" % key)
+            raise NoSuchPropertyError(u"%r" % key)
 
     def __iter__(self):
         return self.KEYS.__iter__()
@@ -107,7 +108,7 @@ class CoreProperties(Mapping):
 
 
 class Cell(object):
-    """ A cell is the basic value type. It always has a ``value`` (that
+    u""" A cell is the basic value type. It always has a ``value`` (that
     may be ``None`` and may optionally also have a type and column name
     associated with it. If no ``type`` is set, the String type is set
     but no type conversion is set. """
@@ -123,30 +124,30 @@ class Cell(object):
 
     def __repr__(self):
         if self.column is not None:
-            return "<Cell(%r=%r:%r>" % (self.column,
+            return u"<Cell(%r=%r:%r>" % (self.column,
                                         self.type, self.value)
-        return "<Cell(%r:%r>" % (self.type, self.value)
+        return u"<Cell(%r:%r>" % (self.type, self.value)
 
     @property
     def empty(self):
-        """ Stringify the value and check that it has a length. """
+        u""" Stringify the value and check that it has a length. """
         if self.value is None:
             return True
         value = self.value
-        if not isinstance(value, str):
-            value = str(value)
+        if not isinstance(value, unicode):
+            value = unicode(value)
         if len(value.strip()):
             return False
         return True
 
     @property
     def properties(self):
-        """ Source-specific information. Only a placeholder here. """
+        u""" Source-specific information. Only a placeholder here. """
         return CoreProperties()
 
     @property
     def topleft(self):
-        """
+        u"""
         Is the cell the top-left of a span? Non-spanning cells are the top left.
 
         This is used for example in HTML generation where the top left cell
@@ -158,7 +159,7 @@ class Cell(object):
 
 
 class TableSet(object):
-    """ A table set is used for data formats in which multiple tabular
+    u""" A table set is used for data formats in which multiple tabular
     objects are bundled. This might include relational databases and
     workbooks used in spreadsheet software (Excel, LibreOffice).
 
@@ -170,37 +171,37 @@ class TableSet(object):
     On any fatal errors, it should raise messytables.ReadError
     """
     def __init__(self, fileobj):
-        """ Store the fileobj, and perhaps all or part of the file. """
+        u""" Store the fileobj, and perhaps all or part of the file. """
         pass
 
     @property
     def tables(self):
-        """ Return a listing of tables (i.e. RowSets) in the ``TableSet``.
+        u""" Return a listing of tables (i.e. RowSets) in the ``TableSet``.
         Each table has a name. """
-        if getattr(self, "_tables", None) is None:
+        if getattr(self, u"_tables", None) is None:
             self._tables = self.make_tables()
         return self._tables
 
     def make_tables(self):
-        raise NotImplementedError("make_tables() not implemented on {0}"
+        raise NotImplementedError(u"make_tables() not implemented on {0}"
                                   .format(type(self)))
     def __getitem__(self, name):
-        """ Return a RowSet based on the name given """
+        u""" Return a RowSet based on the name given """
         matching = [table for table in self.tables if table.name == name]
         if not matching:
-            raise TableError("No table called %r" % name)
+            raise TableError(u"No table called %r" % name)
         elif len(matching) > 1:
-            raise TableError("Multiple tables match %r" % name)
+            raise TableError(u"Multiple tables match %r" % name)
         return matching[0]
 
     @classmethod
     def from_fileobj(cls, fileobj, *args, **kwargs):
-        """ Deprecated, only for compatibility reasons """
+        u""" Deprecated, only for compatibility reasons """
         return cls(fileobj, *args, **kwargs)
 
 
 class RowSet(object):
-    """ A row set (aka: table) is a simple wrapper for an iterator of
+    u""" A row set (aka: table) is a simple wrapper for an iterator of
     rows (which in turn is a list of ``Cell`` objects). The main table
     iterable can only be traversed once, so on order to allow analytics
     like type and header guessing on the data, a sample of ``window``
@@ -224,14 +225,14 @@ class RowSet(object):
     types = property(get_types, set_types)
 
     def register_processor(self, processor):
-        """ Register a stream processor to be used on each row. A
+        u""" Register a stream processor to be used on each row. A
         processor is a function called with the ``RowSet`` as its
         first argument and the row to be processed as the second
         argument. """
         self._processors.append(processor)
 
     def __iter__(self, sample=False):
-        """ Apply processors to the row data. """
+        u""" Apply processors to the row data. """
         for row in self.raw(sample=sample):
             for processor in self._processors:
                 row = processor(self, row)
@@ -248,7 +249,7 @@ class RowSet(object):
         return self.__iter__(sample=True)
 
     def dicts(self, sample=False):
-        """ Return a representation of the data as an iterator of
+        u""" Return a representation of the data as an iterator of
         ordered dictionaries. This is less specific than the cell
         format returned by the generic iterator but only gives a
         subset of the information. """
@@ -257,4 +258,4 @@ class RowSet(object):
             yield OrderedDict([(c.column, c.value) for c in row])
 
     def __repr__(self):
-        return "RowSet(%r)" % self.name
+        return u"RowSet(%r)" % self.name
